@@ -11,6 +11,7 @@ menu_table = Table(
     Column('menu_name', String),
     Column('price', Numeric),
     Column('code', String),
+    Column('description', String),
 )
 
 class MenuRepository(IMenuRepository):
