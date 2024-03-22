@@ -6,19 +6,19 @@ from app.infra.mapper import init_mapper
 from app.infra.menu_repository import menu_table
 from app.shared import get_id
 
+init_mapper()
+
 @pytest.fixture
 def session():
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
     from app.infra.repository import metadata
 
-    # engine = create_engine("sqlite:///:memory:")
-    engine = create_engine("sqlite:///kaffe-chon-chan-soong.db")
+    engine = create_engine("sqlite:///:memory:")
+    # engine = create_engine("sqlite:///kaffe-chon-chan-soong.db")
 
     metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
-
-    init_mapper()
 
     session = Session()
     yield session
