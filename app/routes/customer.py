@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/customer", tags=["customer"])
 
-# TODO: improve with DTO
 @router.get("/menus/", response_model=list[Menu])
 def list_menu(db: Session = Depends(get_db)):
     # TODO: repository injection
