@@ -9,6 +9,7 @@ class Menu:
     menu_name: str
     price: Decimal
     code: str
+    description: str = None
 
     def __eq__(self, __value: "Menu") -> bool:
         if not isinstance(__value, Menu):
