@@ -1,6 +1,7 @@
 from decimal import Decimal
 import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import NoResultFound
 
 from app.infra.mapper import init_mapper
 from app.infra.menu_repository import menu_table
@@ -59,6 +60,18 @@ def test_find_by_id(session):
     assert found_menu.price == menu.price
     assert found_menu.code == menu.code
 
+def test_find_by_id_not_found(session):
+    from app.domain.menu import Menu
+    from app.infra.menu_repository import MenuRepository
+
+    menu = Menu(1, "menu_name", Decimal("100"), "code")
+    menu_repository = MenuRepository(session)
+    menu_repository.save(menu)
+    session.commit()
+
+    found_menu = menu_repository.find_by_id(2)
+    assert found_menu is None
+
 def test_find_by_code(session):
     from app.domain.menu import Menu
     from app.infra.menu_repository import MenuRepository
@@ -78,6 +91,44 @@ def test_find_by_code(session):
     assert found_menu.menu_name == menu1.menu_name
     assert found_menu.price == menu1.price
     assert found_menu.code == menu1.code
+
+def test_find_by_code_not_found(session):
+    from app.domain.menu import Menu
+    from app.infra.menu_repository import MenuRepository
+
+    menu_repository = MenuRepository(session)
+    menu = Menu(get_id(), "abc", Decimal("100"), "abc")
+    menu_repository.save(menu)
+    session.commit()
+
+    with pytest.raises(NoResultFound, ):
+        menu_repository.find_by_code("xyz")
+        pass
+
+def test_find_by_codes(session):
+    from app.domain.menu import Menu
+    from app.infra.menu_repository import MenuRepository
+
+    menu_repository = MenuRepository(session)
+    menu1 = Menu(get_id(), "abc", Decimal("100"), "abc")
+    menu_repository.save(menu1)
+    menu2 = Menu(get_id(), "bcd", Decimal("100"), "bcd")
+    menu_repository.save(menu2)
+    menu3 = Menu(get_id(), "cde", Decimal("100"), "cde")
+    menu_repository.save(menu3)
+
+    session.commit()
+
+    found_menus = menu_repository.find_by_codes(["abc", "bcd"])
+    assert len(found_menus) == 2
+    assert found_menus[0].id == menu1.id
+    assert found_menus[0].menu_name == menu1.menu_name
+    assert found_menus[0].price == menu1.price
+    assert found_menus[0].code == menu1.code
+    assert found_menus[1].id == menu2.id
+    assert found_menus[1].menu_name == menu2.menu_name
+    assert found_menus[1].price == menu2.price
+    assert found_menus[1].code == menu2.code
 
 def test_find_by_menu_name(session):
     from app.domain.menu import Menu

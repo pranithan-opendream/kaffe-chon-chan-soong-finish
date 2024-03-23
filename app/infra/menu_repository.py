@@ -30,14 +30,21 @@ class MenuRepository(IMenuRepository):
             .where(menu_table.c.code == code)
         ).scalar_one()
     
-    def find_by_menu_name(self, menu_name):
+    def find_by_codes(self, codes: list[str]) -> list[Menu]:
+        return self.session.scalars(
+            select(Menu)
+            .where(menu_table.c.code.in_(codes))
+            .order_by(menu_table.c.id)
+        ).all()
+    
+    def find_by_menu_name(self, menu_name) -> list[Menu]:
         return self.session.scalars(
             select(Menu)
             .where(menu_table.c.menu_name.like(f"%{menu_name}%"))
             .order_by(menu_table.c.id)
         ).all()
 
-    def find_all(self):
+    def find_all(self) -> list[Menu]:
         return self.session.scalars(
             select(Menu)
         ).all()
