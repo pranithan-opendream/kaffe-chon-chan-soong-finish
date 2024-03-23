@@ -18,13 +18,13 @@ class IMenuRepository(ABC):
         raise NotImplementedError
     
     @abstractmethod
-    def find_by_codes(self, codes: list[str]) -> Menu:
+    def find_by_codes(self, codes: list[str]) -> list[Menu]:
         raise NotImplementedError
 
     @abstractmethod
-    def find_all(self):
+    def find_all(self) -> list[Menu]:
         raise NotImplementedError
 
     @abstractmethod
-    def find_by_menu_name(self, name: str):
+    def find_by_menu_name(self, name: str) -> list[Menu]:
         raise NotImplementedError

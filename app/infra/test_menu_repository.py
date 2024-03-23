@@ -183,3 +183,15 @@ def test_find_all(session):
     assert found_menus[2].menu_name == menu3.menu_name
     assert found_menus[2].price == menu3.price
     assert found_menus[2].code == menu3.code
+
+
+def test_find_all_no_data_in_table(session):
+    from app.domain.menu import Menu
+    from app.infra.menu_repository import MenuRepository
+
+    menu_repository = MenuRepository(session)
+
+    session.commit()
+
+    found_menus = menu_repository.find_all()
+    assert len(found_menus) == 0

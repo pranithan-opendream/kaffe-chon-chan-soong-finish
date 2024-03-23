@@ -9,5 +9,5 @@ class IMenuService(ABC):
         raise NotImplementedError
         
     @abstractmethod
-    def find_invalid_codes(self, codes: list[str]) -> list[str]:
+    def find_invalid_codes(self, codes: list[str]) -> set[str]:
         raise NotImplementedError
