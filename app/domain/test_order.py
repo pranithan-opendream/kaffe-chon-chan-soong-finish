@@ -33,6 +33,7 @@ def test_init_order():
     assert order.id
     assert order.customer_name == "Foo"
     assert order.date == now
+    assert order.order_number is not None
     assert order.cashier_name == "John Doe"
     assert order.status == "pending"
     assert order.items == ()
