@@ -132,6 +132,7 @@ class OrderDTO:
     customer_name: str
     date: datetime
     cashier_name: str
+    order_number: str
     status: str
     items: list[OrderItemDTO]
 
@@ -141,6 +142,7 @@ def convert_order_to_dto(order: Order) -> OrderDTO:
         customer_name=order.customer_name,
         date=order.date,
         cashier_name=order.cashier_name,
+        order_number=order.order_number,
         status=order.status,
         items=[
             OrderItemDTO(
