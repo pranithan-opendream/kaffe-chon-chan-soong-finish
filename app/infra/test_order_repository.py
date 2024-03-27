@@ -34,7 +34,6 @@ def test_create_order(session):
     order = Order(
         get_id(),
         "customer",
-        "odr-001",
         now,
         "cashier",
         _items=[
@@ -66,10 +65,9 @@ def test_update_order(session):
 
     order = Order(
         get_id(),
-        "customer",
-        "odr-001",
-        now,
-        "cashier",
+        customer_name="customer",
+        date=now,
+        cashier_name="cashier",
         _items=[
             OrderItem(get_id(), "menu_a", 2, Decimal("250")),
         ]
@@ -106,10 +104,9 @@ def test_find_by_id(session):
 
     order = Order(
         get_id(),
-        "customer",
-        "odr-001",
-        now,
-        "cashier",
+        customer_name="customer",
+        date=now,
+        cashier_name="cashier",
         _items=[
             OrderItem(get_id(), "menu_a", 2, Decimal("250")),
         ]

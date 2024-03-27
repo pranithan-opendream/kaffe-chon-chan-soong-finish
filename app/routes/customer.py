@@ -29,7 +29,3 @@ def list_menu(db: Session = Depends(get_db)):
         description=menu.description,
     ) for menu in rslt]
     return rslt
-
-# TODO: Router get by ID
-# TODO: Router get by code
-# TODO: Router get by name

@@ -1,5 +1,6 @@
 
 
+from decimal import Decimal
 from app.domain.menu_repository import IMenuRepository
 from app.domain.menu_service import IMenuService
 from sqlalchemy.exc import NoResultFound
@@ -20,3 +21,11 @@ class MenuService(IMenuService):
         # all_codes - valid_codes
         invalid_codes = set(codes) - set([m.code for m in valid_menus])
         return invalid_codes
+    
+    def get_price(self, code: str) -> Decimal:
+        menu = self.repo.find_by_code(code)
+        return menu.price
+    
+    def get_prices(self, codes: list[str]) -> dict[str, Decimal]:
+        menus = self.repo.find_by_codes(codes)
+        return {m.code: m.price for m in menus}

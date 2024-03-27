@@ -16,12 +16,17 @@ class MockMenuService(IMenuService):
     def find_invalid_codes(self, codes: list[str]) -> set[str]:
         pass
 
+    def get_price(self, code: str) -> Decimal:
+        pass
+
+    def get_prices(self, codes: list[str]) -> dict[str, Decimal]:
+        pass
+
 def test_init_order():
     now = datetime.now()
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=MockMenuService())
@@ -32,55 +37,28 @@ def test_init_order():
     assert order.status == "pending"
     assert order.items == ()
 
-def test_dehydrate_items():
-    now = datetime.now()
-    order = Order(
-        id=get_id(),
-        customer_name="Foo",
-        order_number="123",
-        date=now,
-        cashier_name="John Doe",
-        menu_service=MockMenuService())
-    items = (
-        OrderItem(item_id=1, menu_code="menu_a", quantity=2, price=Decimal("25000")),
-        OrderItem(item_id=2, menu_code="menu_b", quantity=1, price=Decimal("20000")),
-    )
-    order.dehydrate_items(items)
-    assert order.items == items
-
-def test_dehydrate_status():
-    now = datetime.now()
-    order = Order(
-        id=get_id(),
-        customer_name="Foo",
-        order_number="123",
-        date=now,
-        cashier_name="John Doe",
-        menu_service=MockMenuService())
-    order.dehydrate_status("completed")
-    assert order.status == "completed"
-
 def test_add_item():
     now = datetime.now()
     mock_menu_service = MockMenuService()
     mock_menu_service.validate_code = MagicMock(return_value=True)
+    mock_menu_service.get_price = MagicMock(return_value=Decimal("25"))
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
-    item1 = OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2, price=Decimal("25"))
+    item1 = OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2)
     order.add_item(item1)
 
-    item2 = OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2, price=Decimal("250"))
+    item2 = OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2)
     order.add_item(item2)
 
-    item3 = OrderItem(item_id=get_id(), menu_code="menu_b", quantity=2, price=Decimal("25000"))
+    item3 = OrderItem(item_id=get_id(), menu_code="menu_b", quantity=2)
     order.add_item(item3)
 
     assert order.items == (item1, item2, item3)
+    assert order.items[0].price == Decimal("25")
 
 def test_add_item_with_invalid_code():
     now = datetime.now()
@@ -89,7 +67,6 @@ def test_add_item_with_invalid_code():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
@@ -106,20 +83,30 @@ def test_add_items():
     now = datetime.now()
     mock_menu_service = MockMenuService()
     mock_menu_service.find_invalid_codes = MagicMock(return_value=set())
+    mock_menu_service.get_prices = MagicMock(return_value=
+        {
+            "menu_a": Decimal("25"),
+            "menu_b": Decimal("25000"),
+        }
+    )
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
     items = [
-        OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2, price=Decimal("25")),
-        OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2, price=Decimal("250")),
-        OrderItem(item_id=get_id(), menu_code="menu_b", quantity=2, price=Decimal("25000")),
+        OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2),
+        OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2),
+        OrderItem(item_id=get_id(), menu_code="menu_b", quantity=2),
     ]
     order.add_items(items)
     assert order.items == tuple(items)
+    for item in order.items:
+        if item.menu_code == "menu_a":
+            assert item.price == Decimal("25")
+        elif item.menu_code == "menu_b":
+            assert item.price == Decimal("25000")
 
 def test_add_items_with_invalid_code():
     now = datetime.now()
@@ -128,7 +115,6 @@ def test_add_items_with_invalid_code():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
@@ -146,10 +132,16 @@ def test_remove_item():
     now = datetime.now()
     mock_menu_service = MockMenuService()
     mock_menu_service.find_invalid_codes = MagicMock(return_value=set())
+    mock_menu_service.get_prices = MagicMock(return_value=
+        {
+            "menu_a": Decimal("25"),
+            "menu_b": Decimal("25000"),
+        }
+    )
+    
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
@@ -169,13 +161,12 @@ def test_remove_item_from_paid_order():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
     item = OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2, price=Decimal("25"))
     order.add_item(item)
-    order.dehydrate_status("paid")
+    order._status = "paid"
     with pytest.raises(DomainOrderError, match="Cannot remove item from paid order"):
         order.remove_item(item.item_id)
 
@@ -186,7 +177,6 @@ def test_serve():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
@@ -202,13 +192,12 @@ def test_serve_with_already_served():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
     item = OrderItem(item_id=get_id(), menu_code="menu_a", quantity=2, price=Decimal("25"))
     order.add_item(item)
-    order.dehydrate_status("served")
+    order._status = "served"
     with pytest.raises(DomainOrderError, match="Order already served"):
         order.serve()
 
@@ -219,7 +208,6 @@ def test_pay():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)
@@ -236,7 +224,6 @@ def test_pay_without_serving():
     order = Order(
         id=get_id(),
         customer_name="Foo",
-        order_number="123",
         date=now,
         cashier_name="John Doe",
         menu_service=mock_menu_service)

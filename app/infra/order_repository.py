@@ -1,8 +1,9 @@
-from sqlalchemy import Column, ForeignKey, Integer, Numeric, String, Table, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, Sequence, String, Table, DateTime, func
 from app.domain.order import Order
 from app.domain.order_repository import IOrderRepository
 from sqlalchemy.orm import Session, composite
 from .repository import metadata
+
 
 order_table = Table(
     "order",
@@ -22,7 +23,8 @@ order_item_table = Table(
     Column('menu_code', String),
     Column('quantity', Integer),
     Column('order_id', Integer, ForeignKey("order.id")),
-    Column('price', Numeric)
+    Column('price', Numeric),
+    Column('remark', String),
 )
 
 class OrderRepository(IOrderRepository):
