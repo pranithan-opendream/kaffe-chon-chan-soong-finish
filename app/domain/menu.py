@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from decimal import Decimal
 
+from app.domain.entity import entity
 
+@entity
 @dataclass
 class Menu:
     id: int
@@ -11,9 +13,4 @@ class Menu:
     code: str
     description: str = None
 
-    def __eq__(self, __value: "Menu") -> bool:
-        if not isinstance(__value, Menu):
-            return False
-        return self.id == __value.id
-    
 

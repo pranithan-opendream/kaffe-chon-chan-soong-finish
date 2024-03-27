@@ -8,10 +8,10 @@ class A:
     id: int
     another_val: str
 
-@entity(iden_field_name="id")
+@entity(iden_field_name="iden_field")
 @dataclass
 class B:
-    id: int
+    iden_field: int
     another_val: str
 
 def test_eq_same_instance_a():

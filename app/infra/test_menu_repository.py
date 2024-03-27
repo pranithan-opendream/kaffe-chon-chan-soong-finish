@@ -7,8 +7,6 @@ from app.infra.mapper import init_mapper
 from app.infra.menu_repository import menu_table
 from app.shared import get_id
 
-init_mapper()
-
 @pytest.fixture
 def session():
     from sqlalchemy import create_engine
@@ -21,16 +19,18 @@ def session():
     metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
 
+    init_mapper()
+
     session = Session()
     yield session
     session.close()
 
 
-def test_save(session):
+def test_create_menu(session):
     from app.domain.menu import Menu
     from app.infra.menu_repository import MenuRepository
 
-    menu = Menu(get_id(), "menu_name", Decimal("100"), "code")
+    menu = Menu(get_id(), "menu_name", Decimal("100"), "code", "description")
     menu_repository = MenuRepository(session)
     menu_repository.save(menu)
     session.commit()
@@ -43,6 +43,33 @@ def test_save(session):
     assert saved_menu.menu_name == menu.menu_name
     assert saved_menu.price == menu.price
     assert saved_menu.code == menu.code
+    assert saved_menu.description == menu.description
+
+def test_update_menu(session):
+    from app.domain.menu import Menu
+    from app.infra.menu_repository import MenuRepository
+
+    menu = Menu(get_id(), "menu_name", Decimal("100"), "code", "description")
+    menu_repository = MenuRepository(session)
+    menu_repository.save(menu)
+    session.commit()
+
+    updated_menu = menu_repository.find_by_id(menu.id)
+    updated_menu.menu_name = "updated_menu_name"
+    updated_menu.price = Decimal("200")
+    updated_menu.code = "updated_code"
+    menu_repository.save(updated_menu)
+    session.commit()
+
+    saved_menu = session.execute(
+        select(menu_table).where(menu_table.c.id == menu.id)
+    ).first()
+
+    assert saved_menu.id == updated_menu.id
+    assert saved_menu.menu_name == updated_menu.menu_name
+    assert saved_menu.price == updated_menu.price
+    assert saved_menu.code == updated_menu.code
+    assert saved_menu.description == updated_menu.description
 
 def test_find_by_id(session):
     from app.domain.menu import Menu
