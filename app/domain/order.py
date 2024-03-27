@@ -11,7 +11,7 @@ class DomainOrderError(Exception):
     pass
 
 def random_order_number() -> str:
-    return random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ", k=6)
+    return "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ", k=6))
     
 @entity
 @dataclass
