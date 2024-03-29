@@ -17,7 +17,7 @@ class MenuDTO:
     code: str
     description: Optional[str] = None
 
-@router.get("/menus/", response_model=list[MenuDTO])
+@router.get("/menu/", response_model=list[MenuDTO])
 def list_menu(db: Session = Depends(get_db)):
     # TODO: repository injection
     rslt = MenuRepository(db).find_all()
